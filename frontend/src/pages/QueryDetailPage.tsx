@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 import { api } from "../services/api";
@@ -15,25 +15,26 @@ export default function QueryDetailPage() {
   const [responderId, setResponderId] = useState("");
   const [statusUpdate, setStatusUpdate] = useState("");
 
-  const load = () => {
-    if (id) api.getQuery(Number(id)).then(setQuery);
-  };
+  const load = useCallback(() => {
+    if (id) {
+      api.getQuery(Number(id)).then((q) => {
+        setQuery(q);
+        setStatusUpdate(q.status);
+      });
+    }
+  }, [id]);
 
   useEffect(() => {
     load();
     api.getClients().then(setClients);
     api.getStaff().then(setStaffList);
-  }, [id]);
-
-  useEffect(() => {
-    if (query) setStatusUpdate(query.status);
-  }, [query]);
+  }, [load]);
 
   const handleAddResponse = async () => {
     if (!id || !responseText || !responderId) return;
     await api.addResponse(Number(id), {
       message: responseText,
-      is_internal_note: isInternal,
+      is_internal_note: isInternal ? 1 : 0,
       staff_id: Number(responderId),
     });
     setResponseText("");

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { api } from "../services/api";
@@ -24,19 +24,19 @@ export default function QueriesPage() {
     assigned_staff_id: "",
   });
 
-  const load = () => {
+  const load = useCallback(() => {
     const params: Record<string, string> = {};
     if (statusFilter) params.status = statusFilter;
     if (priorityFilter) params.priority = priorityFilter;
     api.getQueries(params).then(setQueries);
-  };
+  }, [statusFilter, priorityFilter]);
 
   useEffect(() => {
     load();
     api.getClients().then(setClients);
     api.getStaff().then(setStaffList);
     api.getSegments().then(setSegments);
-  }, [statusFilter, priorityFilter]);
+  }, [load]);
 
   const handleCreate = async () => {
     await api.createQuery({

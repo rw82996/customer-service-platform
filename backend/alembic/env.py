@@ -6,8 +6,10 @@ from alembic import context
 
 from app.config import DATABASE_URL
 from app.database import Base
-from app.models import *  # noqa: F403 — import all models so metadata is populated
-from app.audit import AuditEvent  # noqa: F811
+from app.models import *  # noqa: F401, F403
+from app.audit import AuditEvent  # noqa: F401, F811
+
+_ = AuditEvent  # ensure model is registered
 
 config = context.config
 

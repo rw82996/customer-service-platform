@@ -1,3 +1,14 @@
+import type {
+  AnalyticsSummary,
+  BusinessSegment,
+  Client,
+  ClientQuery,
+  QueryResponse,
+  QueryWithResponses,
+  Staff,
+  Team,
+} from "../types";
+
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -15,45 +26,45 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const api = {
   // Business Segments
-  getSegments: () => request<any[]>("/api/business-segments/"),
-  createSegment: (data: any) =>
-    request<any>("/api/business-segments/", { method: "POST", body: JSON.stringify(data) }),
+  getSegments: () => request<BusinessSegment[]>("/api/business-segments/"),
+  createSegment: (data: Partial<BusinessSegment>) =>
+    request<BusinessSegment>("/api/business-segments/", { method: "POST", body: JSON.stringify(data) }),
   deleteSegment: (id: number) =>
     request<void>(`/api/business-segments/${id}`, { method: "DELETE" }),
 
   // Teams
-  getTeams: () => request<any[]>("/api/teams/"),
-  getTeam: (id: number) => request<any>(`/api/teams/${id}`),
-  createTeam: (data: any) =>
-    request<any>("/api/teams/", { method: "POST", body: JSON.stringify(data) }),
-  updateTeam: (id: number, data: any) =>
-    request<any>(`/api/teams/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  getTeams: () => request<Team[]>("/api/teams/"),
+  getTeam: (id: number) => request<Team>(`/api/teams/${id}`),
+  createTeam: (data: Partial<Team>) =>
+    request<Team>("/api/teams/", { method: "POST", body: JSON.stringify(data) }),
+  updateTeam: (id: number, data: Partial<Team>) =>
+    request<Team>(`/api/teams/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   deleteTeam: (id: number) =>
     request<void>(`/api/teams/${id}`, { method: "DELETE" }),
 
   // Staff
   getStaff: (teamId?: number) =>
-    request<any[]>(`/api/staff/${teamId != null ? `?team_id=${teamId}` : ""}`),
-  createStaff: (data: any) =>
-    request<any>("/api/staff/", { method: "POST", body: JSON.stringify(data) }),
-  updateStaff: (id: number, data: any) =>
-    request<any>(`/api/staff/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    request<Staff[]>(`/api/staff/${teamId != null ? `?team_id=${teamId}` : ""}`),
+  createStaff: (data: Partial<Staff>) =>
+    request<Staff>("/api/staff/", { method: "POST", body: JSON.stringify(data) }),
+  updateStaff: (id: number, data: Partial<Staff>) =>
+    request<Staff>(`/api/staff/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   deleteStaff: (id: number) =>
     request<void>(`/api/staff/${id}`, { method: "DELETE" }),
 
   // Clients
   getClients: (segmentId?: number) =>
-    request<any[]>(`/api/clients/${segmentId != null ? `?business_segment_id=${segmentId}` : ""}`),
-  createClient: (data: any) =>
-    request<any>("/api/clients/", { method: "POST", body: JSON.stringify(data) }),
-  updateClient: (id: number, data: any) =>
-    request<any>(`/api/clients/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    request<Client[]>(`/api/clients/${segmentId != null ? `?business_segment_id=${segmentId}` : ""}`),
+  createClient: (data: Partial<Client>) =>
+    request<Client>("/api/clients/", { method: "POST", body: JSON.stringify(data) }),
+  updateClient: (id: number, data: Partial<Client>) =>
+    request<Client>(`/api/clients/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   deleteClient: (id: number) =>
     request<void>(`/api/clients/${id}`, { method: "DELETE" }),
-  assignClientToTeam: (data: any) =>
-    request<any>("/api/clients/assignments", { method: "POST", body: JSON.stringify(data) }),
+  assignClientToTeam: (data: { client_id: number; team_id: number }) =>
+    request<{ id: number }>("/api/clients/assignments", { method: "POST", body: JSON.stringify(data) }),
   getClientAssignments: (clientId: number) =>
-    request<any[]>(`/api/clients/${clientId}/assignments`),
+    request<{ id: number; team_id: number; client_id: number }[]>(`/api/clients/${clientId}/assignments`),
 
   // Queries
   getQueries: (params?: Record<string, string | number>) => {
@@ -62,19 +73,19 @@ export const api = {
           Object.entries(params).map(([k, v]) => [k, String(v)])
         ).toString()
       : "";
-    return request<any[]>(`/api/queries/${qs}`);
+    return request<ClientQuery[]>(`/api/queries/${qs}`);
   },
-  getQuery: (id: number) => request<any>(`/api/queries/${id}`),
-  createQuery: (data: any) =>
-    request<any>("/api/queries/", { method: "POST", body: JSON.stringify(data) }),
-  updateQuery: (id: number, data: any) =>
-    request<any>(`/api/queries/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  getQuery: (id: number) => request<QueryWithResponses>(`/api/queries/${id}`),
+  createQuery: (data: Partial<ClientQuery>) =>
+    request<ClientQuery>("/api/queries/", { method: "POST", body: JSON.stringify(data) }),
+  updateQuery: (id: number, data: Partial<ClientQuery>) =>
+    request<ClientQuery>(`/api/queries/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   deleteQuery: (id: number) =>
     request<void>(`/api/queries/${id}`, { method: "DELETE" }),
-  addResponse: (queryId: number, data: any) =>
-    request<any>(`/api/queries/${queryId}/responses`, { method: "POST", body: JSON.stringify(data) }),
+  addResponse: (queryId: number, data: Partial<QueryResponse>) =>
+    request<QueryResponse>(`/api/queries/${queryId}/responses`, { method: "POST", body: JSON.stringify(data) }),
 
   // Analytics
   getAnalytics: (segmentId?: number) =>
-    request<any>(`/api/analytics/summary${segmentId != null ? `?business_segment_id=${segmentId}` : ""}`),
+    request<AnalyticsSummary>(`/api/analytics/summary${segmentId != null ? `?business_segment_id=${segmentId}` : ""}`),
 };

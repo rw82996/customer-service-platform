@@ -17,6 +17,12 @@ dependencies = [
     "psycopg2-binary>=2.9.0",
 ]
 
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+exclude = ["alembic/versions"]
+
 [project.optional-dependencies]
 dev = [
     "ruff>=0.3.0",

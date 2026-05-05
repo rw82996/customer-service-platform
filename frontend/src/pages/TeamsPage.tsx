@@ -29,7 +29,7 @@ export default function TeamsPage() {
 
   const handleViewTeam = async (id: number) => {
     const team = await api.getTeam(id);
-    setSelectedTeam(team);
+    setSelectedTeam({ ...team, members: team.members ?? [] });
     setShowDetailModal(true);
   };
 
