@@ -57,8 +57,10 @@ def get_analytics_summary(
             avg_hours = round(total_hours / count, 2)
 
     # Queries by status
+    base_ids = base_q.with_entities(ClientQuery.id).subquery()
     status_counts = (
         db.query(ClientQuery.status, func.count(ClientQuery.id))
+        .filter(ClientQuery.id.in_(db.query(base_ids)))
         .group_by(ClientQuery.status)
         .all()
     )
@@ -67,6 +69,7 @@ def get_analytics_summary(
     # Queries by priority
     priority_counts = (
         db.query(ClientQuery.priority, func.count(ClientQuery.id))
+        .filter(ClientQuery.id.in_(db.query(base_ids)))
         .group_by(ClientQuery.priority)
         .all()
     )
@@ -78,6 +81,7 @@ def get_analytics_summary(
     segment_counts = (
         db.query(BusinessSegment.name, func.count(ClientQuery.id))
         .join(ClientQuery, ClientQuery.business_segment_id == BusinessSegment.id)
+        .filter(ClientQuery.id.in_(db.query(base_ids)))
         .group_by(BusinessSegment.name)
         .all()
     )
@@ -93,6 +97,7 @@ def get_analytics_summary(
             func.count(QueryResponse.id).label("total_responses"),
         )
         .join(QueryResponse, QueryResponse.staff_id == Staff.id)
+        .filter(QueryResponse.query_id.in_(db.query(base_ids)))
         .group_by(Staff.id, Staff.name)
         .all()
     )
@@ -101,7 +106,10 @@ def get_analytics_summary(
             ClientQuery.assigned_staff_id,
             func.count(ClientQuery.id),
         )
-        .filter(ClientQuery.status.in_(["resolved", "closed"]))
+        .filter(
+            ClientQuery.status.in_(["resolved", "closed"]),
+            ClientQuery.id.in_(db.query(base_ids)),
+        )
         .group_by(ClientQuery.assigned_staff_id)
         .all()
     )
@@ -122,6 +130,7 @@ def get_analytics_summary(
             func.date(ClientQuery.created_at).label("day"),
             func.count(ClientQuery.id),
         )
+        .filter(ClientQuery.id.in_(db.query(base_ids)))
         .group_by(func.date(ClientQuery.created_at))
         .order_by(func.date(ClientQuery.created_at))
         .limit(30)

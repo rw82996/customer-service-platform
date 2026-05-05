@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from app.config import ALLOWED_ORIGINS
-from app.database import Base, engine, get_db
+from app.database import Base, SessionLocal, engine
 from app.logging_config import correlation_id_var, generate_correlation_id, logger
 from app.routes import (
     analytics,
@@ -63,8 +63,11 @@ app.include_router(analytics.router)
 def health_check():
     db_healthy = True
     try:
-        db: Session = next(get_db())
-        db.execute("SELECT 1" if hasattr(db, "execute") else None)  # type: ignore
+        db = SessionLocal()
+        try:
+            db.execute(text("SELECT 1"))
+        finally:
+            db.close()
     except Exception:
         db_healthy = False
     return {
